@@ -118,7 +118,7 @@ function addGeoms(data) {
           // map.fitBounds(e.target.getBounds());
 
           // if this isn't added, then map.click is also fired!
-          L.DomEvent.stopPropagation(e);
+          L.DomEvent.stopPropagation(e,click);
 
           document.getElementById("sidebar-title").innerHTML =
             e.target.feature.properties.name;
