@@ -2,12 +2,12 @@
 
 /*
  * Script to display two tables from Google Sheets as point and geometry layers using Leaflet
- * The Sheets are then imported using PapaParse and overwrite the initially laded layers
+ * The Sheets are then imported using PapaParse and overwrite the initially loaded layers
  */
 
 // PASTE YOUR URLs HERE
 // these URLs come from Google Sheets 'shareable link' form
-// the first is the geometry layer and the second the points
+// the first is the geometry layer and the second is the points
 let geomURL =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vS4sQJDfJGptqDkY-eNDqcR1xJ_YH-X0qb9BKnYvSf34ArSCPE5ducm_-FaG1cNcO1AgQjsjGxie8Fi/pub?gid=0&single=true&output=csv";
 let pointsURL =
@@ -118,7 +118,7 @@ function addGeoms(data) {
           // map.fitBounds(e.target.getBounds());
 
           // if this isn't added, then map.click is also fired!
-          L.DomEvent.stopPropagation(e,click);
+          L.DomEvent.stopPropagation(e);
 
           document.getElementById("sidebar-title").innerHTML =
             e.target.feature.properties.name;
@@ -137,7 +137,6 @@ function addGeoms(data) {
  */
 function addPoints(data) {
   data = data.data;
-  .bindLabel(data[row].description, { noHide: true })
   let pointGroupLayer = L.layerGroup().addTo(map);
 
   // Choose marker type. Options are:
@@ -148,7 +147,7 @@ function addPoints(data) {
   let markerType = "marker";
 
   // Marker radius
-  // Wil be in pixels for circleMarker, metres for circle
+  // Will be in pixels for circleMarker, meters for circle
   // Ignore for point
   let markerRadius = 100;
 
@@ -167,36 +166,13 @@ function addPoints(data) {
     }
     marker.addTo(pointGroupLayer);
 
-    // UNCOMMENT THIS LINE TO USE POPUPS
-    //marker.bindPopup('<h2>' + data[row].name + '</h2>There's a ' + data[row].description + ' here');
+    // Always-on labels for points
+    marker.bindLabel(data[row].name, { noHide: true });
 
-    // COMMENT THE NEXT GROUP OF LINES TO DISABLE SIDEBAR FOR THE MARKERS
-    marker.feature = {
-      properties: {
-        name: data[row].name,
-        description: data[row].description,
-        program: data[row].program,
-        client: data[Row].client,
-        dropbox: data[row].dropbox,
-      },
-    };
-    marker.on({
-      click: function (e) {
-        L.DomEvent.stopPropagation(e);
-        document.getElementById("sidebar-title").innerHTML =
-          e.target.feature.properties.name;
-        document.getElementById("sidebar-content").innerHTML =
-          e.target.feature.properties.description;
-        document.getElementById("sidebar-content").innerHTML =
-          e.target.feature.properties.program;
-        document.getElementById("sidebar-content").innerHTML =
-          e.target.feature.properties.client;
-        document.getElementById("sidebar-content").innerHTML =
-          e.target.feature.properties.dropbox;
-        sidebar.open(panelID);
-      },
-    });
-    // COMMENT UNTIL HERE TO DISABLE SIDEBAR FOR THE MARKERS
+    // Pop-up markers with all the data
+    marker.bindPopup(
+      `<h2>${data[row].name}</h2>Description: ${data[row].description}<br>Program: ${data[row].program}<br>Client: ${data[row].client}<br>Dropbox: ${data[row].dropbox}`
+    );
 
     // AwesomeMarkers is used to create fancier icons
     let icon = L.AwesomeMarkers.icon({
@@ -204,47 +180,3 @@ function addPoints(data) {
       iconColor: "white",
       markerColor: data[row].color,
       prefix: "fa",
-      extraClasses: "fa-rotate-0",
-    });
-    if (!markerType.includes("circle")) {
-      marker.setIcon(icon);
-    }
-  }
-}
-
-/*
- * Accepts any GeoJSON-ish object and returns an Array of
- * GeoJSON Features. Attempts to guess the geometry type
- * when a bare coordinates Array is supplied.
- */
-function parseGeom(gj) {
-  // FeatureCollection
-  if (gj.type == "FeatureCollection") {
-    return gj.features;
-  }
-
-  // Feature
-  else if (gj.type == "Feature") {
-    return [gj];
-  }
-
-  // Geometry
-  else if ("type" in gj) {
-    return [{ type: "Feature", geometry: gj }];
-  }
-
-  // Coordinates
-  else {
-    let type;
-    if (typeof gj[0] == "number") {
-      type = "Point";
-    } else if (typeof gj[0][0] == "number") {
-      type = "LineString";
-    } else if (typeof gj[0][0][0] == "number") {
-      type = "Polygon";
-    } else {
-      type = "MultiPolygon";
-    }
-    return [{ type: "Feature", geometry: { type: type, coordinates: gj } }];
-  }
-}
