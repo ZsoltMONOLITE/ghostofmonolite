@@ -17,10 +17,16 @@ html, body, #map {
     height: 100%;
     width: 100%;
 }
+<div id="sidebar" class="sidebar">
 #sidebar-content, #sidebar-title {
     word-break: break-word;
     margin-right: 40px;
 }
+            <div id="sidebar-names">
+    <input class="names-search" placeholder="Search names" />
+    <ul class="names-list"></ul>
+  </div>
+</div>
         </style>
     </head>
     <body>
@@ -31,4 +37,5 @@ html, body, #map {
         <script src="js/papaparse.min.js"></script>
         <script src="main.js"></script>
     </body>
+    
 </html>
