@@ -51,8 +51,7 @@ function init() {
       addGeoms(result, namesList);
     },
   });
-
-  Papa.parse(pointsURL, {
+    Papa.parse(pointsURL, {
     download: true,
     header: true,
     complete: addPoints,
