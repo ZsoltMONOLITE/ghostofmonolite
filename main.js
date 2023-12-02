@@ -1,47 +1,37 @@
 /* global L Papa */
 
-// PASTE YOUR URLs HERE
-// these URLs come from Google Sheets 'shareable link' form
-// the first is the geometry layer and the second the points
-let geomURL =
-  "https://docs.google.com/spreadsheets/d/e/2PACX-1vS4sQJDfJGptqDkY-eNDqcR1xJ_YH-X0qb9BKnYvSf34ArSCPE5ducm_-FaG1cNcO1AgQjsjGxie8Fi/pub?gid=0&single=true&output=csv";
-let pointsURL =
-  "https://docs.google.com/spreadsheets/d/e/2PACX-1vQqjdVDnZ6IBD_TNSAYEAqF58fbG77bM8w68DdBtkJR-Fa8JgptB-BswaEfUG8qu3o0Cn7Mrhjn1Zeb/pub?output=csv";
+// URLs for the geometry layer and points layer
+let geomURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS4sQJDfJGptqDkY-eNDqcR1xJ_YH-X0qb9BKnYvSf34ArSCPE5ducm_-FaG1cNcO1AgQjsjGxie8Fi/pub?gid=0&single=true&output=csv";
+let pointsURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQqjdVDnZ6IBD_TNSAYEAqF58fbG77bM8w68DdBtkJR-Fa8JgptB-BswaEfUG8qu3o0Cn7Mrhjn1Zeb/pub?output=csv";
 
 window.addEventListener("DOMContentLoaded", init);
 
 let map;
 let sidebar;
 let panelID = "my-info-panel";
+let pointGroupLayer;
+let pointsData;
 
 function init() {
-  // Create a new Leaflet map centered on the continental US
   map = L.map("map").setView([51.5, -0.1], 14);
+  
+  L.tileLayer("https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}{r}.png", {
+    attribution: "© OpenStreetMap © CartoDB",
+    subdomains: "abcd",
+    maxZoom: 19,
+  }).addTo(map);
 
-  // This is the Carto Positron basemap
-  L.tileLayer(
-    "https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}{r}.png",
-    {
-      attribution:
-        "© <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a> © <a href='http://cartodb.com/attributions'>CartoDB</a>",
-      subdomains: "abcd",
-      maxZoom: 19,
-    }
-  ).addTo(map);
-
-  sidebar = L.control
-    .sidebar({
-      container: "sidebar",
-      closeButton: true,
-      position: "right",
-    })
-    .addTo(map);
+  sidebar = L.control.sidebar({
+    container: "sidebar",
+    closeButton: true,
+    position: "right",
+  }).addTo(map);
 
   let panelContent = {
     id: panelID,
     tab: "<i class='fa fa-bars active'></i>",
-    pane: "<p id='sidebar-content'></p>",
-    title: "<h2 id='sidebar-title'>Nothing selected</h2>",
+    pane: "<div id='sidebar-content'><input type='text' id='searchInput' onkeyup='searchFunction()' placeholder='Search for names..' title='Type in a name'><ul id='pointList'></ul></div>",
+    title: "<h2 id='sidebar-title'>Select a Location</h2>",
   };
   sidebar.addPanel(panelContent);
 
@@ -49,8 +39,6 @@ function init() {
     sidebar.close(panelID);
   });
 
-  // Use PapaParse to load data from Google Sheets
-  // And call the respective functions to add those to the map.
   Papa.parse(geomURL, {
     download: true,
     header: true,
@@ -64,111 +52,64 @@ function init() {
 }
 
 function addGeoms(data) {
-  data = data.data;
   let fc = {
     type: "FeatureCollection",
-    features: [],
+    features: data.data.filter(row => row.include === "y").map(row => {
+      let feature = {
+        type: "Feature",
+        properties: {
+          name: row.name,
+          description: row.description
+        },
+        geometry: JSON.parse(row.geometry)
+      };
+      return feature;
+    })
   };
-  for (let row in data) {
-    if (data[row].include == "y") {
-      let features = parseGeom(JSON.parse(data[row].geometry));
-      features.forEach((el) => {
-        el.properties = {
-          name: data[row].name,
-          description: data[row].description,
-        };
-        fc.features.push(el);
-      });
-    }
-  }
-
-  let geomStyle = { color: "#2ca25f", fillColor: "#99d8c9", weight: 2 };
-  let geomHoverStyle = { color: "green", fillColor: "#2ca25f", weight: 3 };
 
   L.geoJSON(fc, {
-    onEachFeature: function (feature, layer) {
-      layer.on({
-        mouseout: function (e) {
-          e.target.setStyle(geomStyle);
-        },
-        mouseover: function (e) {
-          e.target.setStyle(geomHoverStyle);
-        },
-        click: function (e) {
-          document.getElementById("sidebar-title").innerHTML =
-            e.target.feature.properties.name;
-          document.getElementById("sidebar-content").innerHTML =
-            e.target.feature.properties.description;
-          sidebar.open(panelID);
-        },
-      });
-      // Always-on labels for the polygons
-      layer.bindTooltip(feature.properties.name, { permanent: true, opacity: 1 });
-    },
-    style: geomStyle,
+    style: { color: "#2ca25f", fillColor: "#99d8c9", weight: 2 }
   }).addTo(map);
 }
 
 function addPoints(data) {
-  data = data.data;
-  let pointGroupLayer = L.layerGroup().addTo(map);
-  let markerType = "marker";
-  let markerRadius = 100;
+  pointsData = data.data;
+  pointGroupLayer = L.layerGroup().addTo(map);
 
-  for (let row = 0; row < data.length; row++) {
-    let marker;
-    if (markerType == "circleMarker") {
-      marker = L.circleMarker([data[row].lat, data[row].lon], {
-        radius: markerRadius,
-      });
-    } else if (markerType == "circle") {
-      marker = L.circle([data[row].lat, data[row].lon], {
-        radius: markerRadius,
-      });
-    } else {
-      marker = L.marker([data[row].lat, data[row].lon]);
-    }
+  pointsData.forEach((row, index) => {
+    let marker = L.marker([row.lat, row.lon]);
     marker.addTo(pointGroupLayer);
-
-    // Pop-up marker with all data
     marker.bindPopup(`
-      <h2>${data[row].name}</h2>
-      <p>Description: ${data[row].description}</p>
-      <p>Program: ${data[row].program}</p>
-      <p>Client: ${data[row].client}</p>
-      <p>Dropbox: ${data[row].dropbox}</p>
+      <h2>${row.name}</h2>
+      <p>Description: ${row.description}</p>
+      <p>Program: ${row.program}</p>
+      <p>Client: ${row.client}</p>
+      <p>Dropbox: ${row.dropbox}</p>
     `);
 
-    // Always-on labels for the points
-    marker.bindTooltip(data[row].name, { permanent: true, opacity: 1 });
-
-    // Sidebar feature for zooming
-    marker.on({
-      click: function (e) {
-        map.setView([data[row].lat, data[row].lon], 14);
-      },
-    });
-  }
+    let listItem = document.createElement("li");
+    listItem.innerHTML = row.name;
+    listItem.onclick = function () {
+      map.setView([row.lat, row.lon], 14);
+      marker.openPopup();
+    };
+    document.getElementById("pointList").appendChild(listItem);
+  });
 }
 
-function parseGeom(gj) {
-  if (gj.type == "FeatureCollection") {
-    return gj.features;
-  } else if (gj.type == "Feature") {
-    return [gj];
-  } else if ("type" in gj) {
-    return [{ type: "Feature", geometry: gj }];
-  } else {
-    let type;
-    if (typeof gj[0] == "number") {
-      type = "Point";
-    } else if (typeof gj[0][0] == "number") {
-      type = "LineString";
-    } else if (typeof gj[0][0][0] == "number") {
-      type = "Polygon";
+function searchFunction() {
+  let input, filter, ul, li, i, txtValue;
+  input = document.getElementById("searchInput");
+  filter = input.value.toUpperCase();
+  ul = document.getElementById("pointList");
+  li = ul.getElementsByTagName("li");
+
+  for (i = 0; i < li.length; i++) {
+    txtValue = li[i].textContent || li[i].innerText;
+    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+      li[i].style.display = "";
     } else {
-      type = "MultiPolygon";
+      li[i].style.display = "none";
     }
-    return [{ type: "Feature", geometry: { type: type, coordinates: gj } }];
   }
 }
