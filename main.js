@@ -1,8 +1,4 @@
-/* global L Papa */
-
 // PASTE YOUR URLs HERE
-// these URLs come from Google Sheets 'shareable link' form
-// the first is the geometry layer and the second the points
 let geomURL =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vS4sQJDfJGptqDkY-eNDqcR1xJ_YH-X0qb9BKnYvSf34ArSCPE5ducm_-FaG1cNcO1AgQjsjGxie8Fi/pub?gid=0&single=true&output=csv";
 let pointsURL =
@@ -15,10 +11,7 @@ let sidebar;
 let panelID = "my-info-panel";
 
 function init() {
-  // Create a new Leaflet map centered on the continental US
   map = L.map("map").setView([51.5, -0.1], 14);
-
-  // This is the Carto Positron basemap
   L.tileLayer(
     "https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}{r}.png",
     {
@@ -45,25 +38,37 @@ function init() {
   };
   sidebar.addPanel(panelContent);
 
+  let namesList = [];
+
   map.on("click", function () {
     sidebar.close(panelID);
   });
 
-  // Use PapaParse to load data from Google Sheets
-  // And call the respective functions to add those to the map.
   Papa.parse(geomURL, {
     download: true,
     header: true,
-    complete: addGeoms,
+    complete: function (result) {
+      addGeoms(result, namesList);
+    },
   });
+
   Papa.parse(pointsURL, {
     download: true,
     header: true,
     complete: addPoints,
   });
+
+  let options = {
+    valueNames: ["name"],
+    listClass: "names-list",
+    searchClass: "names-search",
+  };
+
+  let names = new List("sidebar-names", options);
+  names.add(namesList);
 }
 
-function addGeoms(data) {
+function addGeoms(data, namesList) {
   data = data.data;
   let fc = {
     type: "FeatureCollection",
@@ -78,6 +83,7 @@ function addGeoms(data) {
           description: data[row].description,
         };
         fc.features.push(el);
+        namesList.push(data[row].name);
       });
     }
   }
@@ -95,6 +101,7 @@ function addGeoms(data) {
           e.target.setStyle(geomHoverStyle);
         },
         click: function (e) {
+          L.DomEvent.stopPropagation(e, click);
           document.getElementById("sidebar-title").innerHTML =
             e.target.feature.properties.name;
           document.getElementById("sidebar-content").innerHTML =
@@ -102,8 +109,6 @@ function addGeoms(data) {
           sidebar.open(panelID);
         },
       });
-      // Always-on labels for the polygons
-      layer.bindTooltip(feature.properties.name, { permanent: true, opacity: 1 });
     },
     style: geomStyle,
   }).addTo(map);
@@ -130,24 +135,42 @@ function addPoints(data) {
     }
     marker.addTo(pointGroupLayer);
 
-    // Pop-up marker with all data
-    marker.bindPopup(`
-      <h2>${data[row].name}</h2>
-      <p>Description: ${data[row].description}</p>
-      <p>Program: ${data[row].program}</p>
-      <p>Client: ${data[row].client}</p>
-      <p>Dropbox: ${data[row].dropbox}</p>
-    `);
-
-    // Always-on labels for the points
-    marker.bindTooltip(data[row].name, { permanent: true, opacity: 1 });
-
-    // Sidebar feature for zooming
+    marker.feature = {
+      properties: {
+        name: data[row].name,
+        description: data[row].description,
+        program: data[row].program,
+        client: data[row].client,
+        dropbox: data[row].dropbox,
+      },
+    };
     marker.on({
       click: function (e) {
-        map.setView([data[row].lat, data[row].lon], 14);
+        L.DomEvent.stopPropagation(e);
+        document.getElementById("sidebar-title").innerHTML =
+          e.target.feature.properties.name;
+        document.getElementById("sidebar-content").innerHTML =
+          e.target.feature.properties.description;
+        document.getElementById("sidebar-content").innerHTML =
+          e.target.feature.properties.program;
+        document.getElementById("sidebar-content").innerHTML =
+          e.target.feature.properties.client;
+        document.getElementById("sidebar-content").innerHTML =
+          e.target.feature.properties.dropbox;
+        sidebar.open(panelID);
       },
     });
+
+    let icon = L.AwesomeMarkers.icon({
+      icon: "info-circle",
+      iconColor: "white",
+      markerColor: data[row].color,
+      prefix: "fa",
+      extraClasses: "fa-rotate-0",
+    });
+    if (!markerType.includes("circle")) {
+      marker.setIcon(icon);
+    }
   }
 }
 
@@ -156,7 +179,7 @@ function parseGeom(gj) {
     return gj.features;
   } else if (gj.type == "Feature") {
     return [gj];
-  } else if ("type" in gj) {
+   } else if ("type" in gj) {
     return [{ type: "Feature", geometry: gj }];
   } else {
     let type;
