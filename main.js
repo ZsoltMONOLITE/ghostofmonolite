@@ -115,7 +115,7 @@ function addGeoms(data) {
         click: function (e) {
           // This zooms the map to the clicked geometry
           // Uncomment to enable
-          map.fitBounds(e.target.getBounds());
+          // map.fitBounds(e.target.getBounds());
 
           // if this isn't added, then map.click is also fired!
           L.DomEvent.stopPropagation(e,click);
@@ -137,6 +137,7 @@ function addGeoms(data) {
  */
 function addPoints(data) {
   data = data.data;
+  .bindLabel(data[row].description, { noHide: true })
   let pointGroupLayer = L.layerGroup().addTo(map);
 
   // Choose marker type. Options are:
@@ -167,16 +168,16 @@ function addPoints(data) {
     marker.addTo(pointGroupLayer);
 
     // UNCOMMENT THIS LINE TO USE POPUPS
-    marker.bindPopup('<h2>' + data[row].name + '</h2>There's a ' + data[row].description + ' here');
+    //marker.bindPopup('<h2>' + data[row].name + '</h2>There's a ' + data[row].description + ' here');
 
     // COMMENT THE NEXT GROUP OF LINES TO DISABLE SIDEBAR FOR THE MARKERS
     marker.feature = {
       properties: {
         name: data[row].name,
         description: data[row].description,
-        Program: data[row].Program,
-        Client: data[Row].Client,
-        Dropbox: data[row].Dropbox,
+        program: data[row].program,
+        client: data[Row].client,
+        cropbox: data[row].dropbox,
       },
     };
     marker.on({
