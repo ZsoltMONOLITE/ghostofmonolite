@@ -177,7 +177,7 @@ function addPoints(data) {
         description: data[row].description,
         program: data[row].program,
         client: data[Row].client,
-        cropbox: data[row].dropbox,
+        dropbox: data[row].dropbox,
       },
     };
     marker.on({
@@ -187,6 +187,12 @@ function addPoints(data) {
           e.target.feature.properties.name;
         document.getElementById("sidebar-content").innerHTML =
           e.target.feature.properties.description;
+        document.getElementById("sidebar-content").innerHTML =
+          e.target.feature.properties.program;
+        document.getElementById("sidebar-content").innerHTML =
+          e.target.feature.properties.client;
+        document.getElementById("sidebar-content").innerHTML =
+          e.target.feature.properties.dropbox;
         sidebar.open(panelID);
       },
     });
