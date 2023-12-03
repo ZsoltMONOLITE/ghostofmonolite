@@ -80,7 +80,7 @@ function addGeoms(data) {
     var popup = L.popup()
         .setLatLng(e.latlng)
         .setContent(popupContent);
-	map.setView(e.latlng, map.getZoom() + 2);
+	map.setView([data[row].lat, data[row].lon], 14);
 
     // Open the popup on the map
     popup.openOn(map);
@@ -129,7 +129,7 @@ function addPoints(data) {
 
     marker.on({
       click: function (e) {
-        map.setView([data[row].lat, data[row].lon], 14);
+	map.setView(e.latlng, map.getZoom() + 2);
       },
     });
 
