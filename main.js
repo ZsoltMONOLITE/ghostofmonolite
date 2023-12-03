@@ -60,8 +60,8 @@ function addGeoms(data) {
     }
   }
 
-  let geomStyle = { color: "black", fillColor: "#808080", weight: 2 };
-  let geomHoverStyle = { color: "green", fillColor: "#2ca25f", weight: 4 };
+  let geomStyle = { color: "black", fillColor: "#adbab7", weight: 2 };
+  let geomHoverStyle = { color: "green", fillColor: "#1e751e", weight: 4 };
 
   L.geoJSON(fc, {
     onEachFeature: function (feature, layer) {
@@ -74,16 +74,16 @@ function addGeoms(data) {
         },
         click: function (e) {
     // Create a popup content string
+    L.DomEvent.stopPropagation(e);
     var popupContent = "<b>" + e.target.feature.properties.name + "</b><br>" + e.target.feature.properties.description;
 
     // Create a popup and set its content
     var popup = L.popup()
         .setLatLng(e.latlng)
         .setContent(popupContent);
-	map.setView([data[row].lat, data[row].lon], 14);
-
     // Open the popup on the map
     popup.openOn(map);
+    map.fitBounds(e.target.getBounds());
 },
       });
     },
@@ -104,20 +104,18 @@ function addPoints(data) {
   let markerRadius = 100;
 
   for (let row = 0; row < data.length; row++) {
-    let marker;
-    if (markerType == "circleMarker") {
-      marker = L.circleMarker([data[row].lat, data[row].lon], {
-        radius: markerRadius,
-      });
-    } else if (markerType == "circle") {
-      marker = L.circle([data[row].lat, data[row].lon], {
-        radius: markerRadius,
-      });
+  let marker;
+  if (data[row].include === "y" || data[row].include === "2_Registered" || data[row].include === "1_Admin") {
+    if (markerType === "circleMarker") {
+      marker = L.circleMarker([data[row].lat, data[row].lon], { radius: markerRadius });
+    } else if (markerType === "circle") {
+      marker = L.circle([data[row].lat, data[row].lon], { radius: markerRadius });
     } else {
       marker = L.marker([data[row].lat, data[row].lon]);
     }
     marker.addTo(pointGroupLayer);
-
+  }
+}
     // Pop-up marker with all data
     marker.bindPopup(`
       <h2>Project: ${data[row].name}</h2>
