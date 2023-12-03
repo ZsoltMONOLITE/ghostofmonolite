@@ -105,7 +105,7 @@ function addPoints(data) {
     let marker;
 
   //// add condition
-  if (data[row].include === "y" || data].include === "2_Registered" || data[row].include === "1_Admin") {
+  if (data[row].include === "y" || [data].include === "2_Registered" || data[row].include === "1_Admin") {
     if (markerType == "circleMarker") {
       marker = L.circleMarker([data[row].lat, data[row].lon], {
         radius: markerRadius,
