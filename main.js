@@ -75,7 +75,7 @@ function addGeoms(data) {
         click: function (e) {
     // Create a popup content string
     var popupContent = "<b>" + e.target.feature.properties.name + "</b><br>" + e.target.feature.properties.description;
-
+	L.DomEvent.stopPropagation(e);
     // Create a popup and set its content
     var popup = L.popup()
         .setLatLng(e.latlng)
@@ -178,3 +178,5 @@ function parseGeom(gj) {
     }
     return [{ type: "Feature", geometry: { type: type, coordinates: gj } }];
   }
+  }
+}
