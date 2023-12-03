@@ -48,7 +48,7 @@ function addGeoms(data) {
     features: [],
   };
   for (let row in data) {
-    if (data[row].include == "y") {
+    if (data[row].include === "y" || data[row].include === "2_Registered" || data[row].include === "1_Admin") {
       let features = parseGeom(JSON.parse(data[row].coordinates));
       features.forEach((el) => {
         el.properties = {
@@ -60,7 +60,7 @@ function addGeoms(data) {
     }
   }
 
-  let geomStyle = { color: "black", fillColor: "#99d8c9", weight: 2 };
+  let geomStyle = { color: "black", fillColor: "#808080", weight: 2 };
   let geomHoverStyle = { color: "green", fillColor: "#2ca25f", weight: 4 };
 
   L.geoJSON(fc, {
