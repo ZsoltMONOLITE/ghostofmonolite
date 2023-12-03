@@ -49,7 +49,7 @@ function addGeoms(data) {
   };
   for (let row in data) {
     if (data[row].include == "y") {
-      let features = parseGeom(JSON.parse(data[row].geometry));
+      let features = parseGeom(JSON.parse(data[row].coordinates));
       features.forEach((el) => {
         el.properties = {
           name: data[row].name,
@@ -60,8 +60,8 @@ function addGeoms(data) {
     }
   }
 
-  let geomStyle = { color: "#2ca25f", fillColor: "#99d8c9", weight: 2 };
-  let geomHoverStyle = { color: "green", fillColor: "#2ca25f", weight: 3 };
+  let geomStyle = { color: "black", fillColor: "#99d8c9", weight: 2 };
+  let geomHoverStyle = { color: "green", fillColor: "#2ca25f", weight: 4 };
 
   L.geoJSON(fc, {
     onEachFeature: function (feature, layer) {
@@ -130,23 +130,35 @@ function addPoints(data) {
 }
 
 function parseGeom(gj) {
+// FeatureCollection	
   if (gj.type == "FeatureCollection") {
     return gj.features;
-  } else if (gj.type == "Feature") {
+  }
+
+  // Feature
+  else if (gj.type == "Feature") {
     return [gj];
-  } else if ("type" in gj) {
+  }
+
+  // Geometry
+  else if ("type" in gj) {
     return [{ type: "Feature", geometry: gj }];
-  } else {
+  } 
+  
+  //typerow check
+  else {
     let type;
-    if (typeof gj[0] == "number") {
-      type = "Point";
-    } else if (typeof gj[0][0] == "number") {
-      type = "LineString";
-    } else if (typeof gj[0][0][0] == "number") {
-      type = "Polygon";
-    } else {
-      type = "MultiPolygon";
-    }
+    if (row.coordinates && row.type) {
+	   type = row.type;	
+	} else if (typeof gj[0] == "number") {
+          type = "Point";
+        } else if (typeof gj[0][0] == "number") {
+          type = "LineString";
+        } else if (typeof gj[0][0][0] == "number") {
+          type = "Polygon";
+        } else {
+          type = "MultiPolygon";
+        }
     return [{ type: "Feature", geometry: { type: type, coordinates: gj } }];
   }
 }
