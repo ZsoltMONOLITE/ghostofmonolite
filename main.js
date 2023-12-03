@@ -80,7 +80,7 @@ function addGeoms(data) {
     var popup = L.popup()
         .setLatLng(e.latlng)
         .setContent(popupContent);
-	map.setView([data[row].lat, data[row].lon], 14);
+	map.setView(e.latlng, 12);
 
     // Open the popup on the map
     popup.openOn(map);
