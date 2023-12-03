@@ -62,7 +62,7 @@ function addGeoms(data) {
 
   let geomStyle = { color: "black", fillColor: "#adbab7", weight: 2 };
   let geomHoverStyle = { color: "green", fillColor: "#1e751e", weight: 4 };
-  let popup.openOn(map)
+  let popup = L.popup();
   L.geoJSON(fc, {
     onEachFeature: function (feature, layer) {
       layer.on({
@@ -73,6 +73,8 @@ function addGeoms(data) {
           e.target.setStyle(geomHoverStyle);
         },
         click: function (e) {
+	  map.fitBounds(e.target.getBounds());
+	  L.DomEvent.stopPropagation(e);
     // Create a popup content string
     var popupContent = "<b>" + e.target.feature.properties.name + "</b><br>" + e.target.feature.properties.description;
 
@@ -81,11 +83,10 @@ function addGeoms(data) {
         .setLatLng(e.latlng)
         .setContent(popupContent);
 	popup.openOn(map);
-	map.setView(e.latlng, 12);
   }
     });
   },
-  style: geomStyle
+  style: geomStyle,
 }).addTo(map);
 
 function addPoints(data) {
@@ -102,6 +103,9 @@ function addPoints(data) {
 
   for (let row = 0; row < data.length; row++) {
     let marker;
+
+  //// add condition
+  if (data[row].include === "y" || data].include === "2_Registered" || data[row].include === "1_Admin") {
     if (markerType == "circleMarker") {
       marker = L.circleMarker([data[row].lat, data[row].lon], {
         radius: markerRadius,
@@ -126,6 +130,7 @@ function addPoints(data) {
 
     marker.on({
       click: function (e) {
+	L.DomEvent.stopPropagation(e);
 	map.setView(e.latlng, map.getZoom() + 2);
       },
     });
@@ -142,6 +147,7 @@ function addPoints(data) {
       marker.setIcon(icon);
     }
   }
+}
 }
 
 function parseGeom(gj) {
