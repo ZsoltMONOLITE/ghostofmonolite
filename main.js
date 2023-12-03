@@ -14,7 +14,6 @@ let map;
 let panelID = "my-info-panel";
 
 function init() {
-  // Create a new Leaflet map centered on the continental US
   map = L.map("map").setView([51.5, -0.1], 14);
 
   // This is the Carto Positron basemap
@@ -27,18 +26,6 @@ function init() {
       maxZoom: 19,
     }
   ).addTo(map);
-
-  let sidebar = L.control
-    .sidebar({
-      container: "sidebar",
-      closeButton: true,
-      position: "right",
-    })
-    .addTo(map);
-
-  map.on("click", function () {
-    sidebar.close(panelID);
-  });
 
   // Use PapaParse to load data from Google Sheets
   // And call the respective functions to add those to the map.
@@ -93,7 +80,7 @@ function addGeoms(data) {
     var popup = L.popup()
         .setLatLng(e.latlng)
         .setContent(popupContent);
-	map.setView(e.latlng, map.getZoom() + 4);
+	map.setView(e.latlng, map.getZoom() + 2);
 
     // Open the popup on the map
     popup.openOn(map);
@@ -134,7 +121,6 @@ function addPoints(data) {
       <p>Dropbox: ${data[row].dropbox}</p>
     `);
 
-    // Sidebar feature for zooming
     marker.on({
       click: function (e) {
         map.setView([data[row].lat, data[row].lon], 14);
