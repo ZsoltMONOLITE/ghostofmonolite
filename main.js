@@ -62,7 +62,7 @@ function addGeoms(data) {
 
   let geomStyle = { color: "black", fillColor: "#adbab7", weight: 2 };
   let geomHoverStyle = { color: "green", fillColor: "#1e751e", weight: 4 };
-
+  let popup.openOn(map)
   L.geoJSON(fc, {
     onEachFeature: function (feature, layer) {
       layer.on({
@@ -77,20 +77,16 @@ function addGeoms(data) {
     var popupContent = "<b>" + e.target.feature.properties.name + "</b><br>" + e.target.feature.properties.description;
 
     // Create a popup and set its content
-    var popup = L.popup()
+    popup
         .setLatLng(e.latlng)
         .setContent(popupContent);
+	popup.openOn(map);
 	map.setView(e.latlng, 12);
-	}	
-
-    // Open the popup on the map
-    popup.openOn(map);
-},
-      });
-    },
-    style: geomStyle,
-  }).addTo(map);
-}
+  }
+    });
+  },
+  style: geomStyle
+}).addTo(map);
 
 function addPoints(data) {
   data = data.data;
