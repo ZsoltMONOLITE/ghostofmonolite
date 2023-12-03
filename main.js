@@ -124,7 +124,7 @@ function addPoints(data) {
       <p>Description: <a href="${data[row].description}" target="_blank"> &gt; Go there &lt;</a></p>
       <p>Program: ${data[row].program}</p>
       <p>Client: ${data[row].client}</p>
-      <p>Dropbox: ${data[row].dropbox}</p>
+      <p>Dropbox: <a href="${data[row].dropbox}" target="_blank"> &gt; Dropbox Link &lt;</a></p>
     `);
 
     marker.on({
