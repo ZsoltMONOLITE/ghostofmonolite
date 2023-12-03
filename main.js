@@ -89,7 +89,7 @@ function addGeoms(data) {
   style: geomStyle,
 }).addTo(map);
 
-function addPoints(data) {
+  function addPoints(data) {
   data = data.data;
   let pointGroupLayer = L.layerGroup().addTo(map);
   // Choose marker type. Options are:
@@ -147,8 +147,6 @@ function addPoints(data) {
       marker.setIcon(icon);
     }
   }
-}
-}
 
 function parseGeom(gj) {
   // FeatureCollection
