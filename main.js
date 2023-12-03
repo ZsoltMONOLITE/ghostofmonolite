@@ -178,4 +178,3 @@ function parseGeom(gj) {
     }
     return [{ type: "Feature", geometry: { type: type, coordinates: gj } }];
   }
-}
