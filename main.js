@@ -94,7 +94,13 @@ function addGeoms(data) {
 function addPoints(data) {
   data = data.data;
   let pointGroupLayer = L.layerGroup().addTo(map);
+  // Choose marker type. Options are:
+  // (these are case-sensitive, defaults to marker!)
+  // marker: standard point with an icon
+  // circleMarker: a circle with a radius set in pixels
+  // circle: a circle with a radius set in meters
   let markerType = "marker";
+  // Marker radius, Wil be in pixels for circleMarker, metres for circle, Ignore for point
   let markerRadius = 100;
 
   for (let row = 0; row < data.length; row++) {
@@ -114,7 +120,7 @@ function addPoints(data) {
 
     // Pop-up marker with all data
     marker.bindPopup(`
-      <h2>${data[row].name}</h2>
+      <h2>Project: ${data[row].name}</h2>
       <p>Description: ${data[row].description}</p>
       <p>Program: ${data[row].program}</p>
       <p>Client: ${data[row].client}</p>
@@ -126,6 +132,18 @@ function addPoints(data) {
         map.setView([data[row].lat, data[row].lon], 14);
       },
     });
+
+    // AwesomeMarkers is used to create fancier icons
+    let icon = L.AwesomeMarkers.icon({
+      icon: "info-circle",
+      iconColor: "white",
+      markerColor: data[row].color,
+      prefix: "fa",
+      extraClasses: "fa-rotate-0",
+    });
+    if (!markerType.includes("circle")) {
+      marker.setIcon(icon);
+    }
   }
 }
 
