@@ -74,16 +74,17 @@ function addGeoms(data) {
         },
         click: function (e) {
     // Create a popup content string
-    L.DomEvent.stopPropagation(e);
     var popupContent = "<b>" + e.target.feature.properties.name + "</b><br>" + e.target.feature.properties.description;
 
     // Create a popup and set its content
     var popup = L.popup()
         .setLatLng(e.latlng)
         .setContent(popupContent);
+	map.setView([data[row].lat, data[row].lon], 12);
+
     // Open the popup on the map
     popup.openOn(map);
-    map.fitBounds(e.target.getBounds());
+    //map.fitBounds(e.target.getBounds());
 },
       });
     },
@@ -104,22 +105,24 @@ function addPoints(data) {
   let markerRadius = 100;
 
   for (let row = 0; row < data.length; row++) {
-  let marker;
-  if (data[row].include === "y" || data[row].include === "2_Registered" || data[row].include === "1_Admin") {
-    if (markerType === "circleMarker") {
-      marker = L.circleMarker([data[row].lat, data[row].lon], { radius: markerRadius });
-    } else if (markerType === "circle") {
-      marker = L.circle([data[row].lat, data[row].lon], { radius: markerRadius });
-    } else {
+    let marker;
+    if (markerType == "circleMarker") {
+      marker = L.circleMarker([data[row].lat, data[row].lon], {
+        radius: markerRadius,
+      });
+    } else if (markerType == "circle") {
+      marker = L.circle([data[row].lat, data[row].lon], {
+        radius: markerRadius,
+      });
+     } else {
       marker = L.marker([data[row].lat, data[row].lon]);
     }
     marker.addTo(pointGroupLayer);
-  }
-}
+  
     // Pop-up marker with all data
     marker.bindPopup(`
       <h2>Project: ${data[row].name}</h2>
-      <p>Description: ${data[row].description}</p>
+      <p>Description: ${data[row].description} <a href="${data[row].description}" target="_blank">&gt; Go there &lt;</a></p>
       <p>Program: ${data[row].program}</p>
       <p>Client: ${data[row].client}</p>
       <p>Dropbox: ${data[row].dropbox}</p>
@@ -127,7 +130,8 @@ function addPoints(data) {
 
     marker.on({
       click: function (e) {
-	map.setView(e.latlng, map.getZoom() + 2);
+	map.setView([data[row].lat, data[row].lon], 12);
+	///map.setView(e.latlng, map.getZoom() + 2);
       },
     });
 
