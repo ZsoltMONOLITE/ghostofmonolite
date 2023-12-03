@@ -86,14 +86,18 @@ function addGeoms(data) {
           e.target.setStyle(geomHoverStyle);
         },
         click: function (e) {
-          document.getElementById("sidebar-title").innerHTML =
-            e.target.feature.properties.name;
-          document.getElementById("sidebar-content").innerHTML =
-            e.target.feature.properties.description;
-          sidebar.open(panelID);
-          // Dynamic zooming on click to zoom in further
-          map.setView(e.latlng, map.getZoom() + 2);
-        },
+    // Create a popup content string
+    var popupContent = "<b>" + e.target.feature.properties.name + "</b><br>" + e.target.feature.properties.description;
+
+    // Create a popup and set its content
+    var popup = L.popup()
+        .setLatLng(e.latlng)
+        .setContent(popupContent);
+	map.setView(e.latlng, map.getZoom() + 4);
+
+    // Open the popup on the map
+    popup.openOn(map);
+},
       });
     },
     style: geomStyle,
