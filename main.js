@@ -60,8 +60,8 @@ function addGeoms(data) {
     }
   }
 
-  let geomStyle = { color: "black", fillColor: "#808080", weight: 2 };
-  let geomHoverStyle = { color: "green", fillColor: "#2ca25f", weight: 4 };
+  let geomStyle = { color: "black", fillColor: "#adbab7", weight: 2 };
+  let geomHoverStyle = { color: "green", fillColor: "#1e751e", weight: 4 };
 
   L.geoJSON(fc, {
     onEachFeature: function (feature, layer) {
@@ -121,7 +121,7 @@ function addPoints(data) {
     // Pop-up marker with all data
     marker.bindPopup(`
       <h2>Project: ${data[row].name}</h2>
-      <p>Description: ${data[row].description}</p>
+      <p>Description: <a href="${data[row].description}" target="_blank"> &gt; Go there &lt;</a></p>
       <p>Program: ${data[row].program}</p>
       <p>Client: ${data[row].client}</p>
       <p>Dropbox: ${data[row].dropbox}</p>
@@ -148,7 +148,7 @@ function addPoints(data) {
 }
 
 function parseGeom(gj) {
-// FeatureCollection	
+  // FeatureCollection
   if (gj.type == "FeatureCollection") {
     return gj.features;
   }
@@ -161,8 +161,8 @@ function parseGeom(gj) {
   // Geometry
   else if ("type" in gj) {
     return [{ type: "Feature", geometry: gj }];
-  } 
-  
+  }
+
   // Coordinates
   else {
     let type;
