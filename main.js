@@ -143,7 +143,6 @@ function addPoints(data) {
       marker.setIcon(icon);
     }
   }
-}
 
 function parseGeom(gj) {
 // FeatureCollection	
