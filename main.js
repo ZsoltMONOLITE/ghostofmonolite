@@ -60,8 +60,8 @@ function addGeoms(data) {
     }
   }
 
-  let geomStyle = { color: "black", fillColor: "#adbab7", weight: 2 };
-  let geomHoverStyle = { color: "green", fillColor: "#1e751e", weight: 4 };
+  let geomStyle = { color: "black", fillColor: "#808080", weight: 2 };
+  let geomHoverStyle = { color: "green", fillColor: "#2ca25f", weight: 4 };
 
   L.geoJSON(fc, {
     onEachFeature: function (feature, layer) {
@@ -75,16 +75,15 @@ function addGeoms(data) {
         click: function (e) {
     // Create a popup content string
     var popupContent = "<b>" + e.target.feature.properties.name + "</b><br>" + e.target.feature.properties.description;
-	L.DomEvent.stopPropagation(e);
+
     // Create a popup and set its content
     var popup = L.popup()
         .setLatLng(e.latlng)
         .setContent(popupContent);
-	map.setView([data[row].lat, data[row].lon], 12);
+	map.setView([data[row].lat, data[row].lon], 14);
 
     // Open the popup on the map
     popup.openOn(map);
-    //map.fitBounds(e.target.getBounds());
 },
       });
     },
@@ -114,15 +113,15 @@ function addPoints(data) {
       marker = L.circle([data[row].lat, data[row].lon], {
         radius: markerRadius,
       });
-     } else {
+    } else {
       marker = L.marker([data[row].lat, data[row].lon]);
     }
     marker.addTo(pointGroupLayer);
-  
+
     // Pop-up marker with all data
     marker.bindPopup(`
       <h2>Project: ${data[row].name}</h2>
-      <p>Description: ${data[row].description} <a href="${data[row].description}" target="_blank">&gt; Go there &lt;</a></p>
+      <p>Description: ${data[row].description}</p>
       <p>Program: ${data[row].program}</p>
       <p>Client: ${data[row].client}</p>
       <p>Dropbox: ${data[row].dropbox}</p>
@@ -130,8 +129,7 @@ function addPoints(data) {
 
     marker.on({
       click: function (e) {
-	map.setView([data[row].lat, data[row].lon], 12);
-	///map.setView(e.latlng, map.getZoom() + 2);
+	map.setView(e.latlng, map.getZoom() + 2);
       },
     });
 
@@ -147,6 +145,7 @@ function addPoints(data) {
       marker.setIcon(icon);
     }
   }
+}
 
 function parseGeom(gj) {
 // FeatureCollection	
@@ -177,6 +176,5 @@ function parseGeom(gj) {
       type = "MultiPolygon";
     }
     return [{ type: "Feature", geometry: { type: type, coordinates: gj } }];
-  }
   }
 }
