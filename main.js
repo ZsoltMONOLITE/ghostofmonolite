@@ -49,7 +49,7 @@ function addGeoms(data) {
   };
   for (let row in data) {
     if (data[row].include === "y" || data[row].include === "2_Registered" || data[row].include === "1_Admin") {
-      let features = parseGeom(JSON.parse(data[row].coordinates));
+      let features = parseGeom(JSON.parse(data[row].geometry));
       features.forEach((el) => {
         el.properties = {
           name: data[row].name,
@@ -163,20 +163,18 @@ function parseGeom(gj) {
     return [{ type: "Feature", geometry: gj }];
   } 
   
-  //typerow check
+  // Coordinates
   else {
     let type;
-    if (row.coordinates && row.type) {
-	   type = row.type;	
-	} else if (typeof gj[0] == "number") {
-          type = "Point";
-        } else if (typeof gj[0][0] == "number") {
-          type = "LineString";
-        } else if (typeof gj[0][0][0] == "number") {
-          type = "Polygon";
-        } else {
-          type = "MultiPolygon";
-        }
+    if (typeof gj[0] == "number") {
+      type = "Point";
+    } else if (typeof gj[0][0] == "number") {
+      type = "LineString";
+    } else if (typeof gj[0][0][0] == "number") {
+      type = "Polygon";
+    } else {
+      type = "MultiPolygon";
+    }
     return [{ type: "Feature", geometry: { type: type, coordinates: gj } }];
   }
 }
