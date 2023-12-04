@@ -1,9 +1,110 @@
 /* global L Papa */
 
-for (let row = 0; row < data.length; row++) {
-  let marker;
+// PASTE YOUR URLs HERE
+// these URLs come from Google Sheets 'shareable link' form
+// the first is the geometry layer and the second the points
+let geomURL =
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vS4sQJDfJGptqDkY-eNDqcR1xJ_YH-X0qb9BKnYvSf34ArSCPE5ducm_-FaG1cNcO1AgQjsjGxie8Fi/pub?gid=0&single=true&output=csv";
+let pointsURL =
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vQqjdVDnZ6IBD_TNSAYEAqF58fbG77bM8w68DdBtkJR-Fa8JgptB-BswaEfUG8qu3o0Cn7Mrhjn1Zeb/pub?output=csv";
 
-  // add condition
+window.addEventListener("DOMContentLoaded", init);
+
+let map;
+let panelID = "my-info-panel";
+
+function init() {
+  map = L.map("map").setView([51.5, -0.1], 14);
+
+  // This is the Carto Positron basemap
+  L.tileLayer(
+    "https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}{r}.png",
+    {
+      attribution:
+        "© <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a> © <a href='http://cartodb.com/attributions'>CartoDB</a>",
+      subdomains: "abcd",
+      maxZoom: 19,
+    }
+  ).addTo(map);
+
+  // Use PapaParse to load data from Google Sheets
+  // And call the respective functions to add those to the map.
+  Papa.parse(geomURL, {
+    download: true,
+    header: true,
+    complete: addGeoms,
+  });
+  Papa.parse(pointsURL, {
+    download: true,
+    header: true,
+    complete: addPoints,
+  });
+}
+
+function addGeoms(data) {
+  data = data.data;
+  let fc = {
+    type: "FeatureCollection",
+    features: [],
+  };
+  for (let row in data) {
+    if (data[row].include === "y" || data[row].include === "2_Registered" || data[row].include === "1_Admin") {
+      let features = parseGeom(JSON.parse(data[row].geometry));
+      features.forEach((el) => {
+        el.properties = {
+          name: data[row].name,
+          description: data[row].description,
+        };
+        fc.features.push(el);
+      });
+    }
+  }
+
+  let geomStyle = { color: "black", fillColor: "#adbab7", weight: 2 };
+  let geomHoverStyle = { color: "green", fillColor: "#1e751e", weight: 4 };
+  let popup = L.popup();
+  L.geoJSON(fc, {
+    onEachFeature: function (feature, layer) {
+      layer.on({
+        mouseout: function (e) {
+          e.target.setStyle(geomStyle);
+        },
+        mouseover: function (e) {
+          e.target.setStyle(geomHoverStyle);
+        },
+        click: function (e) {
+	  map.fitBounds(e.target.getBounds());
+	  L.DomEvent.stopPropagation(e);
+    // Create a popup content string
+    var popupContent = "<b>" + e.target.feature.properties.name + "</b><br>" + e.target.feature.properties.description;
+
+    // Create a popup and set its content
+    popup
+        .setLatLng(e.latlng)
+        .setContent(popupContent);
+	popup.openOn(map);
+  }
+    });
+  },
+  style: geomStyle,
+}).addTo(map);
+
+  function addPoints(data) {
+  data = data.data;
+  let pointGroupLayer = L.layerGroup().addTo(map);
+  // Choose marker type. Options are:
+  // (these are case-sensitive, defaults to marker!)
+  // marker: standard point with an icon
+  // circleMarker: a circle with a radius set in pixels
+  // circle: a circle with a radius set in meters
+  let markerType = "marker";
+  // Marker radius, Wil be in pixels for circleMarker, metres for circle, Ignore for point
+  let markerRadius = 100;
+
+  for (let row = 0; row < data.length; row++) {
+    let marker;
+
+  //// add condition
   if (data[row].include === "y" || data[row].include === "2_Registered" || data[row].include === "1_Admin") {
     if (markerType == "circleMarker") {
       marker = L.circleMarker([data[row].lat, data[row].lon], {
@@ -46,8 +147,7 @@ for (let row = 0; row < data.length; row++) {
       marker.setIcon(icon);
     }
   }
-}
-
+  }
 function parseGeom(gj) {
   // FeatureCollection
   if (gj.type == "FeatureCollection") {
