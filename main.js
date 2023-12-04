@@ -1,5 +1,4 @@
 /* global L Papa */
-
 // PASTE YOUR URLs HERE
 // these URLs come from Google Sheets 'shareable link' form
 // the first is the geometry layer and the second the points
@@ -7,15 +6,11 @@ let geomURL =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vS4sQJDfJGptqDkY-eNDqcR1xJ_YH-X0qb9BKnYvSf34ArSCPE5ducm_-FaG1cNcO1AgQjsjGxie8Fi/pub?gid=0&single=true&output=csv";
 let pointsURL =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vQqjdVDnZ6IBD_TNSAYEAqF58fbG77bM8w68DdBtkJR-Fa8JgptB-BswaEfUG8qu3o0Cn7Mrhjn1Zeb/pub?output=csv";
-
 window.addEventListener("DOMContentLoaded", init);
-
 let map;
 let panelID = "my-info-panel";
-
 function init() {
   map = L.map("map").setView([51.5, -0.1], 14);
-
   // This is the Carto Positron basemap
   L.tileLayer(
     "https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}{r}.png",
@@ -26,7 +21,6 @@ function init() {
       maxZoom: 19,
     }
   ).addTo(map);
-
   // Use PapaParse to load data from Google Sheets
   // And call the respective functions to add those to the map.
   Papa.parse(geomURL, {
@@ -40,7 +34,6 @@ function init() {
     complete: addPoints,
   });
 }
-
 function addGeoms(data) {
   data = data.data;
   let fc = {
@@ -59,10 +52,8 @@ function addGeoms(data) {
       });
     }
   }
-
   let geomStyle = { color: "black", fillColor: "#adbab7", weight: 2 };
   let geomHoverStyle = { color: "green", fillColor: "#1e751e", weight: 4 };
-  
   L.geoJSON(fc, {
     onEachFeature: function (feature, layer) {
       layer.on({
@@ -73,14 +64,14 @@ function addGeoms(data) {
           e.target.setStyle(geomHoverStyle);
         },
         click: function (e) {
-	/* Create a popup content string*/
+    // Create a popup content string
     var popupContent = "<b>" + e.target.feature.properties.name + "</b><br>" + e.target.feature.properties.description;
-    //* Create a popup and set its content*//
+    // Create a popup and set its content
     var popup = L.popup()
         .setLatLng(e.latlng)
         .setContent(popupContent);
 	map.setView(e.latlng, 12);
-    /* Open the popup on the map*/
+    // Open the popup on the map
     popup.openOn(map);
 },
       });
@@ -88,9 +79,7 @@ function addGeoms(data) {
     style: geomStyle,
   }).addTo(map);
 }
-
-		
-  function addPoints(data) {
+function addPoints(data) {
   data = data.data;
   let pointGroupLayer = L.layerGroup().addTo(map);
   // Choose marker type. Options are:
@@ -101,14 +90,8 @@ function addGeoms(data) {
   let markerType = "marker";
   // Marker radius, Wil be in pixels for circleMarker, metres for circle, Ignore for point
   let markerRadius = 100;
-
   for (let row = 0; row < data.length; row++) {
     let marker;
-
-  //// add condition
-  if (data[row].include === "y" || data[row].include === "2_Registered" || data[row].include === "1_Admin") {
-
-	  
     if (markerType == "circleMarker") {
       marker = L.circleMarker([data[row].lat, data[row].lon], {
         radius: markerRadius,
@@ -121,13 +104,13 @@ function addGeoms(data) {
       marker = L.marker([data[row].lat, data[row].lon]);
     }
     marker.addTo(pointGroupLayer);
-
     // Pop-up marker with all data
     marker.bindPopup(`
       <h2>Project: ${data[row].name}</h2>
       <p>Description: <a href="${data[row].description}" target="_blank"> &gt; Go there &lt;</a></p>
       <p>Program: ${data[row].program}</p>
       <p>Client: ${data[row].client}</p>
+      <p>Dropbox: ${data[row].dropbox}</p>
       <p>Dropbox: <a href="${data[row].dropbox}" target="_blank"> &gt; Dropbox Link &lt;</a></p>
     `);
 
@@ -136,7 +119,6 @@ function addGeoms(data) {
 	map.setView(e.latlng, map.getZoom() + 2);
       },
     });
-
     // AwesomeMarkers is used to create fancier icons
     let icon = L.AwesomeMarkers.icon({
       icon: "info-circle",
@@ -147,25 +129,22 @@ function addGeoms(data) {
     });
     if (!markerType.includes("circle")) {
       marker.setIcon(icon);
-     }
-   }
+    }
   }
+}
 function parseGeom(gj) {
   // FeatureCollection
   if (gj.type == "FeatureCollection") {
     return gj.features;
   }
-
   // Feature
   else if (gj.type == "Feature") {
     return [gj];
   }
-
   // Geometry
   else if ("type" in gj) {
     return [{ type: "Feature", geometry: gj }];
   }
-
   // Coordinates
   else {
     let type;
