@@ -103,7 +103,11 @@ function addPoints(data) {
     } else {
       marker = L.marker([data[row].lat, data[row].lon]);
     }
-    marker.addTo(pointGroupLayer);
+	  
+    if (data[row].include === "y" || data[row].include === "2_Registered" || data[row].include === "1_Admin") {
+      pointGroupLayer.addLayer(marker);
+    }
+    
     // Pop-up marker with all data
     marker.bindPopup(`
       <h2>Project: ${data[row].name}</h2>
