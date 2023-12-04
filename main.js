@@ -96,7 +96,7 @@ function addPoints(data) {
         radius: markerRadius,
       });
     } else {
-      marker = L.marker(data[row].lat, data[row].lon]);
+      marker = L.marker([data[row].lat, data[row].lon]);
     }
 
     marker.name = data[row].name; // Extend marker with a name property for search
