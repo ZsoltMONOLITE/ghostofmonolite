@@ -82,14 +82,9 @@ function addGeoms(data) {
 function addPoints(data) {
   data = data.data;
   let pointGroupLayer = L.layerGroup().addTo(map);
-  // Choose marker type. Options are:
-  // (these are case-sensitive, defaults to marker!)
-  // marker: standard point with an icon
-  // circleMarker: a circle with a radius set in pixels
-  // circle: a circle with a radius set in meters
   let markerType = "marker";
-  // Marker radius, Wil be in pixels for circleMarker, metres for circle, Ignore for point
   let markerRadius = 100;
+
   for (let row = 0; row < data.length; row++) {
     let marker;
     if (markerType == "circleMarker") {
@@ -103,30 +98,26 @@ function addPoints(data) {
     } else {
       marker = L.marker([data[row].lat, data[row].lon]);
     }
-	  
-    if (data[row].include === "y" || data[row].include === "2_Registered" || data[row].include === "1_Admin") {
-      pointGroupLayer.addLayer(marker);
-    }
+
+    marker.name = data[row].name; // Extend marker with a name property for search
 
     let descriptionLink = data[row].description ? `<p>Description: <a href="${data[row].description}" target="_blank"> &gt; Go there &lt;</a></p>` : '';
     let dropboxLink = data[row].dropbox ? `<p>Dropbox: <a href="${data[row].dropbox}" target="_blank"> &gt; Dropbox Link &lt;</a></p>` : '';
 
-    // Pop-up marker with all data
-   marker.bindPopup(`
-  <h2>Project: ${data[row].name}</h2>
-  ${descriptionLink}
-  <p>Program: ${data[row].program}</p>
-  <p>Client: ${data[row].client}</p>
-  ${dropboxLink}
-`);
-
+    marker.bindPopup(`
+      <h2>Project: ${data[row].name}</h2>
+      ${descriptionLink}
+      <p>Program: ${data[row].program}</p>
+      <p>Client: ${data[row].client}</p>
+      ${dropboxLink}
+    `);
 
     marker.on({
       click: function (e) {
-	map.setView(e.latlng, map.getZoom() + 2);
+        map.setView(e.latlng, map.getZoom() + 2);
       },
     });
-    // AwesomeMarkers is used to create fancier icons
+
     let icon = L.AwesomeMarkers.icon({
       icon: "info-circle",
       iconColor: "white",
@@ -134,10 +125,31 @@ function addPoints(data) {
       prefix: "fa",
       extraClasses: "fa-rotate-0",
     });
+
     if (!markerType.includes("circle")) {
       marker.setIcon(icon);
     }
+
+    if (data[row].include === "y" || data[row].include === "2_Registered" || data[row].include === "1_Admin") {
+      pointGroupLayer.addLayer(marker);
+    }
   }
+
+  // Add search control
+  var searchControl = new L.Control.Search({
+    layer: pointGroupLayer,
+    propertyName: 'name',
+    marker: false,
+    moveToLocation: function(latlng, title, map) {
+      map.setView(latlng, map.getZoom()); // Adjust to set the desired zoom level
+    }
+  });
+
+  searchControl.on('search:locationfound', function(e) {
+    e.layer.openPopup();
+  });
+
+  map.addControl(searchControl);
 }
 function parseGeom(gj) {
   // FeatureCollection
