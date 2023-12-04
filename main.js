@@ -147,7 +147,7 @@ function addGeoms(data) {
       marker.setIcon(icon);
     }
   }
-
+  }
 function parseGeom(gj) {
   // FeatureCollection
   if (gj.type == "FeatureCollection") {
