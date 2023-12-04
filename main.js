@@ -107,15 +107,19 @@ function addPoints(data) {
     if (data[row].include === "y" || data[row].include === "2_Registered" || data[row].include === "1_Admin") {
       pointGroupLayer.addLayer(marker);
     }
-    
+
+    let descriptionLink = data[row].description ? `<p>Description: <a href="${data[row].description}" target="_blank"> &gt; Go there &lt;</a></p>` : '';
+    let dropboxLink = data[row].dropbox ? `<p>Dropbox: <a href="${data[row].dropbox}" target="_blank"> &gt; Dropbox Link &lt;</a></p>` : '';
+
     // Pop-up marker with all data
-    marker.bindPopup(`
-      <h2>Project: ${data[row].name}</h2>
-      <p>Description: <a href="${data[row].description}" target="_blank"> &gt; Go there &lt;</a></p>
-      <p>Program: ${data[row].program}</p>
-      <p>Client: ${data[row].client}</p>
-      <p>Dropbox: <a href="${data[row].dropbox}" target="_blank"> &gt; Dropbox Link &lt;</a></p>
-    `);
+   marker.bindPopup(`
+  <h2>Project: ${data[row].name}</h2>
+  ${descriptionLink}
+  <p>Program: ${data[row].program}</p>
+  <p>Client: ${data[row].client}</p>
+  ${dropboxLink}
+`);
+
 
     marker.on({
       click: function (e) {
